@@ -90,7 +90,7 @@ This project automates the entire workflow, reducing preparation time from hours
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/morning-star-certificate-automation.git
+git clone https://github.com/Alex770-designer/morning-star-certificate-automation.git
 cd morning-star-certificate-automation
 ```
 
