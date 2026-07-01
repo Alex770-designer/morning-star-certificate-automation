@@ -1,7 +1,12 @@
 import os
 from google import genai
+from dotenv import load_dotenv
 
-client = genai.Client(api_key=os.environ["certificate_automation"])
+load_dotenv()
+
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
 
 
 def generate_message(student_name):
