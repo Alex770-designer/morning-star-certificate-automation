@@ -125,8 +125,6 @@ if __name__ == "__main__":
 
             message = generate_message(student_name)
 
-            time.sleep(1)
-
             doc_id = create_google_doc(drive_service, student_name, folder_id)
             insert_text(docs_service, doc_id, message)
 
