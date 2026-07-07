@@ -40,11 +40,14 @@ def get_services():
 def load_students(csv_path):
     students = []
 
-    with open(csv_path, newline="") as file:
+    with open(csv_path, newline="", encoding="utf-8") as file:
         reader = csv.DictReader(file)
 
         for row in reader:
-            students.append(row["name"])
+            students.append({
+                "name": row["name"],
+                "grade": row["grade"]
+            })
 
     return students
 
@@ -84,7 +87,9 @@ if __name__ == "__main__":
     # ----------------------------
     # Main loop
     # ----------------------------
-    for i, student_name in enumerate(students, start=1):
+    for i, student in enumerate(students, start=1):
+        student_name = student["name"]
+        grade = student["grade"]
 
         total = len(students)
 
@@ -123,7 +128,7 @@ if __name__ == "__main__":
                     folder_id
                 )
 
-            message = generate_message(student_name)
+            message = generate_message(student_name, grade)
 
             doc_id = create_google_doc(drive_service, student_name, folder_id)
             insert_text(docs_service, doc_id, message)
@@ -134,6 +139,7 @@ if __name__ == "__main__":
 
             results.append({
                 "Student": student_name,
+                "Grade": grade,
                 "Status": "Success",
                 "Folder ID": folder_id,
                 "Doc ID": doc_id,
@@ -167,6 +173,7 @@ if __name__ == "__main__":
             file,
             fieldnames=[
                 "Student",
+                "Grade",
                 "Status",
                 "Folder ID",
                 "Doc ID",
