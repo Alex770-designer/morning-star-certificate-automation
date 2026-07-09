@@ -1,113 +1,91 @@
 import os
 import time
-from google import genai
-from dotenv import load_dotenv
-
-load_dotenv()
-
-api_key = os.getenv("GEMINI_API_KEY")
-
-if not api_key:
-    raise RuntimeError(
-        "GEMINI_API_KEY not found. Create a .env file with your API key."
-    )
-
-client = genai.Client(api_key=api_key)
+import random
 
 
 def generate_message(student_name, grade):
 
-    prompt = f"""
-You are writing a personalized certificate message for a student named {student_name} who completed the Morning Star Program.
+    adjectives = [
+        "wonderful",
+        "positive",
+        "amazing",
+        "kind",
+        "joyful",
+        "enthusiastic",
+        "meaningful",
+        "inspiring",
+        "energetic",
+        "thoughtful"
+    ]
 
-Morning Star is a 20-day summer spiritual and community program held at the Jamatkhana, where children gather for prayer, reflection, learning, friendship, and community activities. Students also participate in fun Sunday events such as games and team-building activities.
+    nouns = [
+        "energy",
+        "spirit",
+        "attitude",
+        "enthusiasm",
+        "participation",
+        "kindness",
+        "presence",
+        "effort"
+    ]
 
-Your task is to write a unique, heartfelt certificate message.
+    middle_phrases = [
+        "Your participation helped create a welcoming and memorable environment for everyone at Morning Star.",
+        "You helped make each Morning Star gathering more enjoyable through your kindness and involvement.",
+        "Your presence contributed to the friendships, memories, and positive experiences created throughout the program.",
+        "You played an important part in making Morning Star a place filled with learning, connection, and happiness.",
+        "Your involvement helped bring the Morning Star community together and made the experience special for everyone."
+    ]
 
-------------------------------------------------------------
-GRADE CONTEXT (IMPORTANT - FOLLOW STRICTLY)
+    closings = [
+        "We are grateful for the memories you helped create and the positive spirit you brought to the program.",
+        "We appreciate the kindness and enthusiasm you shared throughout Morning Star.",
+        "We hope you continue carrying the values of faith, kindness, and service wherever you go.",
+        "Your journey through Morning Star is something to be proud of, and we look forward to seeing you again.",
+        "Thank you for being part of the Morning Star family and contributing to such a meaningful experience."
+    ]
 
-Student Grade Group: {grade}
 
-You MUST adapt tone, vocabulary, and sentence complexity based on this group.
-Do not ignore these instructions.
+    # Adjust tone based on grade
+    if grade in ["Birth-3", "PreK", "KG"]:
+        opening = (
+            f"We are so proud of you for being part of Morning Star! "
+            f"You showed your happiness, kindness, and love for learning through every moment."
+        )
 
-GRADE ADAPTATION RULES:
+    elif grade in ["1st", "2nd", "3rd", "4th"]:
+        opening = (
+            f"Congratulations on completing the Morning Star Program! "
+            f"Your curiosity, kindness, and excitement helped make each day special."
+        )
 
-Early Childhood (Birth-3, PreK, KG):
-- Very simple sentences
-- Warm, playful, child-like tone
-- Focus on joy, kindness, prayer, friends, and learning
+    elif grade in ["5th", "6th", "7th", "8th"]:
+        opening = (
+            f"Congratulations on completing the Morning Star Program! "
+            f"Your dedication, positive attitude, and growing sense of responsibility reflected the true spirit of the program."
+        )
 
-Elementary (1st-4th):
-- Friendly and encouraging tone
-- Emphasize curiosity, growth, friendship, and effort
+    else:
+        opening = (
+            f"Congratulations on completing the Morning Star Program! "
+            f"Your maturity, commitment, and willingness to grow spiritually and personally represent the values Morning Star encourages."
+        )
 
-Middle School (5th-8th):
-- More mature tone
-- Emphasize leadership, responsibility, faith, and character
 
-High School (9th-12th):
-- Thoughtful and reflective tone
-- Emphasize maturity, service, and long-term values
-------------------------------------------------------------
+    adj = random.choice(adjectives)
+    noun = random.choice(nouns)
+    middle = random.choice(middle_phrases)
+    closing = random.choice(closings)
 
-REQUIREMENTS:
-- 120 to 170 words
-- Address the student naturally by first name ({student_name})
-- Congratulate them on completing Morning Star Program
-- Mention spiritual growth and personal growth
-- Mention friendships and memories
-- Encourage continuation of values learned
-- Each message must feel unique in structure and tone
-- Do NOT use bullet points
-- Do NOT use quotation marks
-- Do NOT invent personal details
 
-FORMAT RULES:
-
-- The message MUST start exactly with:
-Ya Ali Madad {student_name},
-
-- The message MUST end exactly with:
-With warm wishes,
-The Morning Star Team
-
-Do not add anything before or after these lines.
-"""
-
-    MAX_RETRIES = 6
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
-
-            print(f"✓ Gemini message generated for {student_name} ({grade})")
-            return response.text.strip()
-
-        except Exception as e:
-            wait_time = 2 ** attempt
-
-            print(
-                f"⚠ Gemini failed for {student_name} "
-                f"(Attempt {attempt + 1}/{MAX_RETRIES})"
-            )
-            print(f"   Error: {e}")
-
-            if attempt < MAX_RETRIES - 1:
-                print(f"   Retrying in {wait_time} seconds...\n")
-                time.sleep(wait_time)
-            else:
-                print("\nUsing fallback message.\n")
-
-    # Fallback (keeps SAME format as required)
     return f"""
 Ya Ali Madad {student_name},
 
-Congratulations on completing the Morning Star Program! Your dedication, kindness, and enthusiasm throughout this journey are something to be proud of. We hope the time you spent in prayer, reflection, learning, and building friendships has given you meaningful memories and values that will continue to guide you as you grow.
+{opening}
+
+Thank you for bringing such a {adj} {noun} to Morning Star. {middle}
+
+{closing}
 
 We look forward to seeing you again at future Morning Star programs.
 
