@@ -1,86 +1,60 @@
-import csv
+import sqlite3
 import webbrowser
 
 
-REPORT_FILE = "output/reports/processing_report.csv"
-
-
-def load_students():
-
-    students = []
-
-    with open(
-        REPORT_FILE,
-        newline="",
-        encoding="utf-8"
-    ) as file:
-
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            students.append(row)
-
-    return students
-
+DATABASE = "morningstar.db"
 
 
 def search_student(query):
 
-    students = load_students()
+    conn = sqlite3.connect(DATABASE)
 
-    query = query.lower()
+    cursor = conn.cursor()
 
-    matches = []
 
-    for student in students:
+    cursor.execute(
+        """
+        SELECT name, grade, folder_id, status
+        FROM students
+        WHERE name LIKE ?
+        """,
+        (f"%{query}%",)
+    )
 
-        name = student["Student"].lower()
 
-        if query in name:
+    results = cursor.fetchall()
 
-            matches.append(student)
+    conn.close()
 
-    return matches
+    return results
 
 
 
 def display_student(student):
 
+    name, grade, folder_id, status = student
+
+
     print("\n==============================")
     print("Student Found")
-    print("==============================\n")
+    print("==============================")
 
-    print(
-        "Name:",
-        student["Student"]
-    )
+    print("Name:", name)
+    print("Grade:", grade)
 
-    if "Grade" in student:
-        print(
-            "Grade:",
-            student["Grade"]
-        )
-
-    print(
-        "Folder ID:",
-        student["Folder ID"]
-    )
+    print("\nFolder ID:")
+    print(folder_id)
 
     link = (
         "https://drive.google.com/drive/folders/"
-        + student["Folder ID"]
+        + folder_id
     )
 
-    print(
-        "\nFolder Link:"
-    )
-
+    print("\nFolder Link:")
     print(link)
 
-    print(
-        "\nStatus:",
-        student["Status"]
-    )
+    print("\nStatus:")
+    print(status)
 
     print("==============================\n")
 
@@ -88,54 +62,49 @@ def display_student(student):
 
 
 
-# -----------------------------
-# START
-# -----------------------------
-
-search = input(
+query = input(
     "Search student: "
 )
 
 
-results = search_student(search)
+results = search_student(query)
 
 
 if len(results) == 0:
 
-    print(
-        "\n❌ No student found."
-    )
+    print("\n❌ No student found.")
 
 
 elif len(results) == 1:
 
     link = display_student(results[0])
 
+
     open_folder = input(
         "Open folder? (y/n): "
     )
 
+
     if open_folder.lower() == "y":
+
         webbrowser.open(link)
+
 
 
 else:
 
-    print(
-        f"\nFound {len(results)} matches:\n"
-    )
+    print("\nMultiple matches found:\n")
+
 
     for i, student in enumerate(results):
 
         print(
-            f"{i+1}. {student['Student']}"
+            f"{i+1}. {student[0]}"
         )
 
 
     choice = int(
-        input(
-            "\nSelect student number: "
-        )
+        input("\nChoose student: ")
     )
 
 
@@ -148,5 +117,7 @@ else:
         "Open folder? (y/n): "
     )
 
+
     if open_folder.lower() == "y":
+
         webbrowser.open(link)
