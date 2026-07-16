@@ -64,6 +64,30 @@ def generate_message(student_name, grade):
             f"Congratulations on completing the Morning Star Program! "
             f"Your dedication, positive attitude, and growing sense of responsibility reflected the true spirit of the program."
         )
+    
+    elif grade in ["Volunteer"]:
+        opening = (
+        f"Thank you for your dedicated service as a Morning Star volunteer! "
+        f"Your kindness, enthusiasm, and willingness to support others helped create a positive, welcoming, and memorable experience for every participant."
+    )
+
+    elif grade in ["Kamadiasaheb"]:
+        opening = (
+            f"In grateful recognition of your outstanding leadership and devoted service to the Morning Star Program. "
+            f"Your guidance, encouragement, and unwavering commitment inspired our youth and strengthened our community."
+        )
+
+    elif grade in ["Mukhianimaa"]:
+        opening = (
+            f"In heartfelt appreciation of your exceptional leadership, compassion, and dedicated service. "
+            f"Your wisdom, care, and unwavering support have enriched the lives of our participants and made this year's Morning Star a tremendous success."
+        )
+
+    elif grade in ["Kamadianimaa"]:
+        opening = (
+            f"In sincere gratitude for your devoted service and leadership throughout the Morning Star Program. "
+            f"Your kindness, generosity, and steadfast commitment created a welcoming environment where every participant could learn, grow, and thrive."
+        )
 
     else:
         opening = (

@@ -1,6 +1,7 @@
 import os
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
+import time
 
 def create_folder(service, student_name):
     metadata = {
@@ -50,6 +51,7 @@ def create_shortcut(service, file_name, file_id, student_folder_id):
         return None
 
 def upload_file(service, file_path, folder_id):
+
     file_name = os.path.basename(file_path)
 
     metadata = {
@@ -57,15 +59,55 @@ def upload_file(service, file_path, folder_id):
         "parents": [folder_id]
     }
 
-    media = MediaFileUpload(file_path, resumable=True)
+    MAX_RETRIES = 5
 
-    uploaded = service.files().create(
-        body=metadata,
-        media_body=media,
-        fields="id"
-    ).execute()
+    for attempt in range(MAX_RETRIES):
 
-    return uploaded["id"]
+        try:
+
+            media = MediaFileUpload(
+                file_path,
+                resumable=True
+            )
+
+            uploaded = service.files().create(
+                body=metadata,
+                media_body=media,
+                fields="id"
+            ).execute()
+
+            print(f"✔ Uploaded {file_name}")
+
+            return uploaded["id"]
+
+
+        except Exception as e:
+
+            wait_time = 2 ** attempt
+
+            print(
+                f"⚠ Upload failed for {file_name} "
+                f"(Attempt {attempt + 1}/{MAX_RETRIES})"
+            )
+
+            print(f"Error: {e}")
+
+
+            if attempt < MAX_RETRIES - 1:
+
+                print(
+                    f"Retrying in {wait_time} seconds...\n"
+                )
+
+                time.sleep(wait_time)
+
+            else:
+
+                print(
+                    f"❌ Giving up on {file_name}"
+                )
+
+                raise
 
 
 def upload_files(service, file_list, folder_id):
@@ -89,13 +131,58 @@ def make_public(service, file_id):
     ).execute()
 
 def upload_shared_media(service, file_list, shared_folder_id):
+
     uploaded_files = []
 
+    # Get all existing files already in the shared folder
+    existing = {}
+    page_token = None
+
+    while True:
+
+        response = service.files().list(
+            q=f"'{shared_folder_id}' in parents and trashed=false",
+            fields="nextPageToken, files(id, name)",
+            pageSize=100,
+            pageToken=page_token
+        ).execute()
+
+        for file in response.get("files", []):
+            existing[file["name"]] = file["id"]
+
+        page_token = response.get("nextPageToken")
+
+        if not page_token:
+            break
+
+    print(f"Found {len(existing)} existing media files.")
+
+    # Upload only files that aren't already there
     for file_path in file_list:
-        file_id = upload_file(service, file_path, shared_folder_id)
+
+        filename = os.path.basename(file_path)
+
+        if filename in existing:
+
+            print(f"⏭ Skipping {filename}")
+
+            uploaded_files.append({
+                "name": filename,
+                "id": existing[filename]
+            })
+
+            continue
+
+        print(f"⬆ Uploading {filename}")
+
+        file_id = upload_file(
+            service,
+            file_path,
+            shared_folder_id
+        )
 
         uploaded_files.append({
-            "name": os.path.basename(file_path),
+            "name": filename,
             "id": file_id
         })
 
